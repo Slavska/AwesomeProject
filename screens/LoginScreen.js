@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -6,48 +7,107 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Keyboard,
   ScrollView,
   Dimensions,
-  Button,
+  KeyboardAvoidingView,
+  Platform,
+  Animated,
 } from "react-native";
 
 export default function LoginScreen() {
+  const [shift, setShift] = useState(false);
+  const [position] = useState(new Animated.Value(0));
+  const [input2Focused, setInput2Focused] = useState(false);
+  const [input3Focused, setInput3Focused] = useState(false);
+  const [hidePassword, setHidePassword] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleForm = () => {
+    console.log({ email, password });
+  };
+
+  const togglePasswordVisibility = (event) => {
+    event.stopPropagation();
+    setHidePassword(!hidePassword);
+  };
+
+  useEffect(() => {
+    const listenerShow = Keyboard.addListener("keyboardDidShow", () => {
+      setShift(true);
+    });
+    const listenerHide = Keyboard.addListener("keyboardDidHide", () => {
+      setShift(false);
+    });
+
+    return () => {
+      listenerShow.remove();
+      listenerHide.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(position, {
+      toValue: shift ? 90 : 50,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [shift]);
+
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      <Image
-        source={require("../assets/bg.jpg")}
-        style={styles.bg}
-        resizeMode="cover"
-      />
-      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-        <View style={[styles.formWrapper]}>
-          <Text style={styles.title}>Увійти</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input]}
-              placeholder="Адреса електронної пошти"
-              placeholderTextColor={"#BDBDBD"}
-            />
-            <TextInput
-              style={[styles.input]}
-              placeholder="Пароль"
-              placeholderTextColor={"#BDBDBD"}
-            />
-            <TouchableOpacity>
-              <Button style={styles.inputPassword}>Показати</Button>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.container}>
+        <StatusBar style="auto" />
+        <Image
+          source={require("../assets/bg.jpg")}
+          style={styles.bg}
+          resizeMode="cover"
+        />
+        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+          <Animated.View
+            style={[styles.formWrapper, { paddingBottom: position }]}
+          >
+            <Text style={styles.title}>Увійти</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                onFocus={() => setInput2Focused(true)}
+                onBlur={() => setInput2Focused(false)}
+                style={[styles.input, input2Focused && styles.inputFocused]}
+                placeholder="Адреса електронної пошти"
+                placeholderTextColor={"#BDBDBD"}
+                value={email}
+                onChangeText={setEmail}
+              />
+              <TextInput
+                onFocus={() => setInput3Focused(true)}
+                onBlur={() => setInput3Focused(false)}
+                style={[styles.input, input3Focused && styles.inputFocused]}
+                placeholder="Пароль"
+                placeholderTextColor={"#BDBDBD"}
+                secureTextEntry={hidePassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={togglePasswordVisibility}>
+                <Text style={styles.inputPassword}>
+                  {hidePassword ? "Показати" : "Приховати"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={handleForm} style={styles.button}>
+              <Text style={styles.buttonText}>Увійти</Text>
             </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Увійти</Text>
-          </TouchableOpacity>
-          <Text style={styles.linkText}>
-            Немає акаунту?
-            <Text style={styles.linkTextLine}>Зареєструватися</Text>
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+            <Text style={styles.linkText}>
+              Немає акаунту?
+              <Text style={styles.linkTextLine}>Зареєструватися</Text>
+            </Text>
+          </Animated.View>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 const screenSize = Dimensions.get("screen");
