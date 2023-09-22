@@ -14,6 +14,7 @@ import {
   Animated,
   KeyboardAvoidingView,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function RegistrationScreen() {
   const [shift, setShift] = useState(false);
@@ -25,9 +26,17 @@ export default function RegistrationScreen() {
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigation = useNavigation();
 
   const handleForm = () => {
-    console.log({ login, email, password });
+    navigation.navigate("Home", {
+      screen: "PostNav",
+      params: {
+        screen: ["Posts", "Profile"],
+        loginUser: login,
+        emailUser: email,
+      },
+    });
   };
 
   const togglePasswordVisibility = (event) => {
@@ -114,7 +123,12 @@ export default function RegistrationScreen() {
             <TouchableOpacity onPress={handleForm} style={styles.button}>
               <Text style={styles.buttonText}>Зареєструватися</Text>
             </TouchableOpacity>
-            <Text style={styles.linkText}>Вже є акаунт? Увійти</Text>
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate("Login")}
+            >
+              Вже є акаунт? Увійти
+            </Text>
           </Animated.View>
         </ScrollView>
       </View>

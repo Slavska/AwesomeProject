@@ -14,6 +14,7 @@ import {
   Platform,
   Animated,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
   const [shift, setShift] = useState(false);
@@ -23,8 +24,19 @@ export default function LoginScreen() {
   const [hidePassword, setHidePassword] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigation = useNavigation();
+
   const handleForm = () => {
-    console.log({ email, password });
+    navigation.navigate("Home", {
+      screen: "PostNav",
+      params: {
+        emailUser: email,
+        screen: "Posts",
+        params: {
+          emailUser: email,
+        },
+      },
+    });
   };
 
   const togglePasswordVisibility = (event) => {
@@ -100,7 +112,10 @@ export default function LoginScreen() {
             <TouchableOpacity onPress={handleForm} style={styles.button}>
               <Text style={styles.buttonText}>Увійти</Text>
             </TouchableOpacity>
-            <Text style={styles.linkText}>
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate("Registration")}
+            >
               Немає акаунту?
               <Text style={styles.linkTextLine}>Зареєструватися</Text>
             </Text>
