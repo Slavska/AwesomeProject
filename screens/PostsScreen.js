@@ -1,28 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Dimensions } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import { useFocusEffect } from "@react-navigation/native";
-
+import { useRoute } from "@react-navigation/native";
+import { StyleSheet, Text, View, Dimensions, Image } from "react-native";
 import PostList from "../components/PostList";
 
 export default function PostsScreen() {
   const route = useRoute();
-  const { loginUser, emailUser } = route.params;
-
+  const { loginUser, emailUser, photoUri } = route.params;
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
+  const [photo, setPhoto] = useState("");
 
   useEffect(() => {
     if (loginUser && emailUser) {
       setLogin(loginUser);
       setEmail(emailUser);
     }
-  }, [loginUser, emailUser]);
+    if (photoUri) {
+      setPhoto(photoUri);
+    }
+  }, [loginUser, emailUser, photoUri]);
 
   return (
     <View style={styles.bg}>
       <View style={styles.userPost}>
-        <View style={styles.avavtarThumb}></View>
+        {photo ? (
+          <View>
+            <Image
+              source={{ uri: photo }}
+              style={styles.avavtarThumb}
+              resizeMode="cover"
+            />
+          </View>
+        ) : (
+          <View style={styles.avavtarThumb}></View>
+        )}
         <View style={styles.userInfo}>
           <Text style={styles.login}>{login ? login : "ТЕСТ"}</Text>
           <Text style={styles.email}>{email}</Text>

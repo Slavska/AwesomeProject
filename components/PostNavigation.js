@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Octicons } from "@expo/vector-icons";
 import SvgLogout from "./SvgLogout";
@@ -8,14 +8,15 @@ import PostsScreen from "../screens/PostsScreen";
 import SvgArrow from "./SvgArrow";
 import CreatePostsScreen from "../screens/CreatePostsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import { useRoute } from "@react-navigation/native";
 
 const Tabs = createBottomTabNavigator();
 
 export default function PostNavigation() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { loginUser, emailUser, namePost, locationPost } = route.params;
+  const { loginUser, emailUser, namePost, locationPost, photoPost, photoUri } =
+    route.params;
+
   return (
     <Tabs.Navigator
       screenOptions={({ route }) => ({
@@ -53,6 +54,8 @@ export default function PostNavigation() {
           emailUser,
           namePost,
           locationPost,
+          photoPost,
+          photoUri,
         }}
         options={{
           title: "Публікації",
@@ -97,6 +100,8 @@ export default function PostNavigation() {
           emailUser,
           namePost,
           locationPost,
+          photoPost,
+          photoUri,
         }}
         options={{
           headerShown: false,

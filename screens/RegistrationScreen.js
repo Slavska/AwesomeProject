@@ -1,6 +1,8 @@
-import { SvgPlus } from "../components/SvgPlus";
 import { useState, useEffect } from "react";
+import { Platform } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import * as ImagePicker from "expo-image-picker";
 import {
   StyleSheet,
   Text,
@@ -14,9 +16,10 @@ import {
   Animated,
   KeyboardAvoidingView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { SvgPlus } from "../components/SvgPlus";
 
 export default function RegistrationScreen() {
+  const navigation = useNavigation();
   const [shift, setShift] = useState(false);
   const [position] = useState(new Animated.Value(0));
   const [hidePassword, setHidePassword] = useState(true);
@@ -26,8 +29,36 @@ export default function RegistrationScreen() {
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigation = useNavigation();
+  const [photoUri, setPhotoUri] = useState(null);
 
+  const handlePickImage = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== "granted") {
+        alert("Нет разрешения на доступ к галерее!");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (result.canceled) {
+        console.log("Выбор изображения был отменен");
+      } else if (result.uri) {
+        setPhotoUri(result.uri);
+      } else if (result.error) {
+        console.error("Ошибка выбора изображения: ", result.error);
+      }
+    } catch (error) {
+      console.error("Произошла ошибка: ", error);
+    }
+  };
   const handleForm = () => {
     navigation.navigate("Home", {
       screen: "PostNav",
@@ -35,6 +66,7 @@ export default function RegistrationScreen() {
         screen: ["Posts", "Profile"],
         loginUser: login,
         emailUser: email,
+        photoUri: photoUri,
       },
     });
   };
@@ -56,13 +88,14 @@ export default function RegistrationScreen() {
       listenerHide.remove();
     };
   }, []);
+
   useEffect(() => {
     Animated.timing(position, {
       toValue: shift ? 130 : 50,
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [shift]);
+  }, [shift, photoUri]);
 
   return (
     <KeyboardAvoidingView
@@ -82,7 +115,15 @@ export default function RegistrationScreen() {
         >
           <Animated.View style={styles.formWrapper}>
             <View style={styles.avavtarThumb}>
-              <SvgPlus style={styles.plusSvg} />
+              {photoUri ? (
+                <Image
+                  source={{ uri: photoUri }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <SvgPlus onPress={handlePickImage} style={styles.plusSvg} />
+              )}
             </View>
             <Text style={styles.title}>Реєстрація</Text>
             <View style={styles.inputContainer}>
@@ -228,5 +269,10 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     color: "#1B4371",
+  },
+  avatarImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
   },
 });

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -14,9 +15,9 @@ import {
   Platform,
   Animated,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
+  const navigation = useNavigation();
   const [shift, setShift] = useState(false);
   const [position] = useState(new Animated.Value(0));
   const [input2Focused, setInput2Focused] = useState(false);
@@ -24,7 +25,6 @@ export default function LoginScreen() {
   const [hidePassword, setHidePassword] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigation = useNavigation();
 
   const handleForm = () => {
     navigation.navigate("Home", {

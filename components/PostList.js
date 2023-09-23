@@ -1,27 +1,44 @@
 import React, { useEffect, useState } from "react";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  Image,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
 import SvgLocation from "../components/SvgLocation";
 import SvgComment from "../components/SvgComment";
 import SvgLike from "../components/SvgLike";
 
 export default function PostList() {
-  const [posts, setPosts] = useState([]);
   const route = useRoute();
-  const { namePost, locationPost } = route.params;
+  const navigation = useNavigation();
+  const { namePost, locationPost, photoPost } = route.params;
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     if (namePost && locationPost) {
-      const newPost = { name: namePost, location: locationPost };
+      const newPost = {
+        id: Date.now(),
+        name: namePost,
+        location: locationPost,
+        photo: photoPost,
+        like: 0,
+      };
       setPosts((prevPosts) => [...prevPosts, newPost]);
     }
   }, [namePost, locationPost]);
+
+  const handleLike = (postId) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, like: post.like === 0 ? 1 : 0 } : post
+      )
+    );
+  };
+
   return (
     <View>
       {posts.length > 0 ? (
@@ -30,20 +47,33 @@ export default function PostList() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
-              <View style={styles.postThumb}></View>
+              <Image
+                source={{ uri: item.photo }}
+                style={styles.postThumb}
+                resizeMode="cover"
+              />
               <Text style={styles.postName}>{item.name}</Text>
               <View style={styles.aboutWrapper}>
                 <View style={styles.viewWrapper}>
-                  <TouchableOpacity style={styles.commentWrapper}>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Comments")}
+                    style={styles.commentWrapper}
+                  >
                     <SvgComment />
                     <Text style={styles.text}>0</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.likeWrapper}>
+                  <TouchableOpacity
+                    style={styles.likeWrapper}
+                    onPress={() => handleLike(item.id)}
+                  >
                     <SvgLike />
-                    <Text style={styles.text}>0</Text>
+                    <Text style={styles.text}>{item.like}</Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.lokationWrapper}>
+                <TouchableOpacity
+                  style={styles.lokationWrapper}
+                  onPress={() => navigation.navigate("Map")}
+                >
                   <SvgLocation />
                   <Text style={styles.textUnderline}>{item.location}</Text>
                 </TouchableOpacity>
