@@ -3,8 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-  ImageBackground,
   Dimensions,
   KeyboardAvoidingView,
   TouchableOpacity,
@@ -13,7 +11,7 @@ import {
 } from "react-native";
 import SvgArrowFocused from "../components/SvgArrowFocused";
 
-export default function Comment({ odd }) {
+export default function Comment() {
   const timestamp = Date.now();
   const date = new Date(timestamp);
   const [input3Focused, setInput3Focused] = useState(false);
