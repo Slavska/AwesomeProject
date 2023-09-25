@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
@@ -8,14 +8,17 @@ import PostsScreen from "../screens/PostsScreen";
 import SvgArrow from "./SvgArrow";
 import CreatePostsScreen from "../screens/CreatePostsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import { useDispatch, useSelector } from "react-redux";
+import { signout } from "../redux/operations";
 
 const Tabs = createBottomTabNavigator();
 
 export default function PostNavigation() {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
-  const route = useRoute();
-  const { loginUser, emailUser, namePost, locationPost, photoPost, photoUri } =
-    route.params;
+  const handleLogout = () => {
+    dispatch(signout()).then(() => navigation.navigate("Login"));
+  };
 
   return (
     <Tabs.Navigator
@@ -49,14 +52,6 @@ export default function PostNavigation() {
       <Tabs.Screen
         name="Posts"
         component={PostsScreen}
-        initialParams={{
-          loginUser,
-          emailUser,
-          namePost,
-          locationPost,
-          photoPost,
-          photoUri,
-        }}
         options={{
           title: "Публікації",
           headerStyle: {
@@ -70,11 +65,8 @@ export default function PostNavigation() {
           },
           headerLeft: false,
           headerRight: () => (
-            <TouchableOpacity
-              style={styles.logout}
-              onPress={() => navigation.navigate("Registration")}
-            >
-              <SvgLogout />
+            <TouchableOpacity onPress={handleLogout}>
+              <SvgLogout style={{ marginRight: 16 }} />
             </TouchableOpacity>
           ),
         }}
@@ -95,14 +87,6 @@ export default function PostNavigation() {
       <Tabs.Screen
         name="Profile"
         component={ProfileScreen}
-        initialParams={{
-          loginUser,
-          emailUser,
-          namePost,
-          locationPost,
-          photoPost,
-          photoUri,
-        }}
         options={{
           headerShown: false,
         }}

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -15,6 +14,9 @@ import {
   Platform,
   Animated,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { getposts, signin } from "../redux/operations";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -25,17 +27,12 @@ export default function LoginScreen() {
   const [hidePassword, setHidePassword] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
+  const isLogined = useSelector((state) => state.main.user);
 
   const handleForm = () => {
-    navigation.navigate("Home", {
-      screen: "PostNav",
-      params: {
-        emailUser: email,
-        screen: "Posts",
-        params: {
-          emailUser: email,
-        },
-      },
+    dispatch(signin({ email, password })).then(() => {
+      navigation.navigate("Home");
     });
   };
 
@@ -43,6 +40,12 @@ export default function LoginScreen() {
     event.stopPropagation();
     setHidePassword(!hidePassword);
   };
+
+  useEffect(() => {
+    if (isLogined) {
+      navigation.navigate("Home");
+    }
+  }, [isLogined]);
 
   useEffect(() => {
     const listenerShow = Keyboard.addListener("keyboardDidShow", () => {

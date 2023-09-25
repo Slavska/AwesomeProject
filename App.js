@@ -3,8 +3,12 @@ import LoginScreen from "./screens/LoginScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import "react-native-gesture-handler";
+import { PersistGate } from "redux-persist/integration/react";
+import { Provider } from "react-redux";
+import { store, persistor } from "./redux/store";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./screens/Home";
+import { Text } from "react-native";
 
 const MainStack = createStackNavigator();
 
@@ -18,30 +22,34 @@ export default function App() {
     return null;
   }
   return (
-    <NavigationContainer>
-      <MainStack.Navigator initialRouteName="Registration">
-        <MainStack.Screen
-          name="Registration"
-          component={RegistrationScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <MainStack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <MainStack.Screen
-          name="Home"
-          component={Home}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </MainStack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <PersistGate loading={<Text>Loading...</Text>} persistor={persistor}>
+        <NavigationContainer>
+          <MainStack.Navigator initialRouteName="Registration">
+            <MainStack.Screen
+              name="Registration"
+              component={RegistrationScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <MainStack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <MainStack.Screen
+              name="Home"
+              component={Home}
+              options={{
+                headerShown: false,
+              }}
+            />
+          </MainStack.Navigator>
+        </NavigationContainer>
+      </PersistGate>
+    </Provider>
   );
 }

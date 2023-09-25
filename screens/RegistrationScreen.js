@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
 import {
@@ -17,9 +16,11 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { SvgPlus } from "../components/SvgPlus";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { setUserProfile, signup, updateuser } from "../redux/operations";
 
 export default function RegistrationScreen() {
-  const navigation = useNavigation();
   const [shift, setShift] = useState(false);
   const [position] = useState(new Animated.Value(0));
   const [hidePassword, setHidePassword] = useState(true);
@@ -29,7 +30,9 @@ export default function RegistrationScreen() {
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [photoUri, setPhotoUri] = useState(null);
+  const [photoUri, setPhotoUri] = useState("");
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   const handlePickImage = async () => {
     try {
@@ -60,15 +63,12 @@ export default function RegistrationScreen() {
     }
   };
   const handleForm = () => {
-    navigation.navigate("Home", {
-      screen: "PostNav",
-      params: {
-        screen: ["Posts", "Profile"],
-        loginUser: login,
-        emailUser: email,
-        photoUri: photoUri,
-      },
-    });
+    dispatch(signup({ email, password, photoUri }))
+      .then(() => {
+        dispatch(updateuser({ login, photoUri }));
+      })
+
+      .finally(() => navigation.navigate("Home"));
   };
 
   const togglePasswordVisibility = (event) => {
@@ -95,7 +95,7 @@ export default function RegistrationScreen() {
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [shift, photoUri]);
+  }, [shift]);
 
   return (
     <KeyboardAvoidingView

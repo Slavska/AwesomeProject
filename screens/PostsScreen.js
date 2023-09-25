@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { useRoute } from "@react-navigation/native";
 import { StyleSheet, Text, View, Dimensions, Image } from "react-native";
 import PostList from "../components/PostList";
+import { useDispatch, useSelector } from "react-redux";
+import { getposts } from "../redux/operations";
 
 export default function PostsScreen() {
-  const route = useRoute();
-  const { loginUser, emailUser, photoUri } = route.params;
-  const [login, setLogin] = useState("");
-  const [email, setEmail] = useState("");
-  const [photo, setPhoto] = useState("");
+  const data = useSelector((state) => state.main);
+  const photo = data?.user?.photoURL;
+  const uid = useSelector((state) => state.main?.user?.uid);
 
+  const [filteredPosts, setFilteredPosts] = useState([]);
+
+  const filterPostsByOwner = (posts, owner) => {
+    return posts.filter((post) => post.data.owner === owner);
+  };
+  const dispatch = useDispatch();
   useEffect(() => {
-    if (loginUser && emailUser) {
-      setLogin(loginUser);
-      setEmail(emailUser);
+    dispatch(getposts());
+  }, []);
+  useEffect(() => {
+    if (data.posts) {
+      const filtered = filterPostsByOwner(data.posts, uid);
+      setFilteredPosts(filtered);
     }
-    if (photoUri) {
-      setPhoto(photoUri);
-    }
-  }, [loginUser, emailUser, photoUri]);
+  }, [data.posts, uid]);
 
   return (
     <View style={styles.bg}>
@@ -35,11 +40,11 @@ export default function PostsScreen() {
           <View style={styles.avavtarThumb}></View>
         )}
         <View style={styles.userInfo}>
-          <Text style={styles.login}>{login ? login : "ТЕСТ"}</Text>
-          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.login}>{data?.user?.displayName}</Text>
+          <Text style={styles.email}>{data?.user?.email}</Text>
         </View>
       </View>
-      <PostList />
+      {data?.posts?.length > 0 && <PostList data={filteredPosts} />}
     </View>
   );
 }

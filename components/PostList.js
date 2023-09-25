@@ -12,62 +12,61 @@ import SvgLocation from "../components/SvgLocation";
 import SvgComment from "../components/SvgComment";
 import SvgLike from "../components/SvgLike";
 
-export default function PostList() {
-  const route = useRoute();
+export default function PostList({ data }) {
   const navigation = useNavigation();
-  const { namePost, locationPost, photoPost } = route.params;
-  const [posts, setPosts] = useState([]);
+
+  const [likes, setLikes] = useState({});
 
   useEffect(() => {
-    if (namePost && locationPost) {
-      const newPost = {
-        id: Date.now(),
-        name: namePost,
-        location: locationPost,
-        photo: photoPost,
-        like: 0,
-      };
-      setPosts((prevPosts) => [...prevPosts, newPost]);
-    }
-  }, [namePost, locationPost]);
+    const initialLikes = {};
+    data.forEach((item) => {
+      initialLikes[item.id] = item.data.likes || 0;
+    });
+    setLikes(initialLikes);
+  }, [data]);
 
   const handleLike = (postId) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, like: post.like === 0 ? 1 : 0 } : post
-      )
-    );
+    setLikes((prevLikes) => ({
+      ...prevLikes,
+      [postId]:
+        prevLikes[postId] % 2 === 0
+          ? prevLikes[postId] + 1
+          : prevLikes[postId] - 1,
+    }));
   };
-
   return (
     <View>
-      {posts.length > 0 ? (
+      {data && data.length > 0 ? (
         <FlatList
-          data={posts}
+          data={data}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
               <Image
-                source={{ uri: item.photo }}
+                source={{ uri: item.data.photo }}
                 style={styles.postThumb}
                 resizeMode="cover"
               />
-              <Text style={styles.postName}>{item.name}</Text>
+              <Text style={styles.postName}>{item.data.name}</Text>
               <View style={styles.aboutWrapper}>
                 <View style={styles.viewWrapper}>
                   <TouchableOpacity
-                    onPress={() => navigation.navigate("Comments")}
+                    onPress={() =>
+                      navigation.navigate("Comments", {
+                        data: { item },
+                      })
+                    }
                     style={styles.commentWrapper}
                   >
                     <SvgComment />
-                    <Text style={styles.text}>0</Text>
+                    <Text style={styles.text}>{item.data.comments.length}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.likeWrapper}
                     onPress={() => handleLike(item.id)}
                   >
                     <SvgLike />
-                    <Text style={styles.text}>{item.like}</Text>
+                    <Text style={styles.text}>{likes[item.id]}</Text>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
@@ -75,7 +74,9 @@ export default function PostList() {
                   onPress={() => navigation.navigate("Map")}
                 >
                   <SvgLocation />
-                  <Text style={styles.textUnderline}>{item.location}</Text>
+                  <Text style={styles.textUnderline}>
+                    {item.data.locationName}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

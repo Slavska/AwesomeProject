@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
@@ -17,6 +17,11 @@ import SvgLocation from "../components/SvgLocation";
 import SvgTresh from "../components/SvgTresh";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { createpost, getposts } from "../redux/operations";
+import { storage } from "../config";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
+import { reverseGeocodeAsync } from "expo-location";
 
 export default function CreatePostScreen() {
   const navigation = useNavigation();
@@ -27,76 +32,12 @@ export default function CreatePostScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      await MediaLibrary.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      const coords = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      };
-      await setLocation(coords);
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-      }
-    })();
-  }, []);
-
-  const handlePhoto = async () => {
-    try {
-      if (cameraRef) {
-        const { uri } = await cameraRef.takePictureAsync();
-        const asset = await MediaLibrary.createAssetAsync(uri);
-        setPhoto(asset.uri);
-        const userLocation = await Location.getCurrentPositionAsync({});
-        const coords = {
-          latitude: userLocation.coords.latitude,
-          longitude: userLocation.coords.longitude,
-        };
-
-        setLocation(coords);
-        const locationAddress = await reverseGeocode(location);
-        setLocationName(locationAddress);
-      }
-    } catch (error) {
-      console.error("Error capturing or saving the photo:", error);
-    }
-  };
-
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
-
-  const handleForm = () => {
-    navigation.navigate("Home", {
-      screen: "PostNav",
-      params: {
-        screen: "Posts",
-        namePost: name,
-        locationPost: locationName,
-        photoPost: photo,
-      },
-    });
-    setName("");
-    setPhoto("");
-    setLocation("");
-  };
+  const uid = useSelector((state) => state.main?.user?.uid);
+  const dispatch = useDispatch();
 
   const reverseGeocode = async (coords) => {
     try {
-      const location = await Location.reverseGeocodeAsync(coords);
+      const location = await reverseGeocodeAsync(coords);
       if (location && location.length > 0) {
         const address =
           location[0].name || location[0].city || location[0].region;
@@ -109,6 +50,93 @@ export default function CreatePostScreen() {
       return "Ошибка геокодирования";
     }
   };
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+
+      try {
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        const coords = {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        };
+        await setLocation(coords);
+
+        const locationAddress = await reverseGeocode(coords);
+        setLocationName(locationAddress);
+      } catch (error) {
+        console.error("Ошибка получения местоположения:", error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      }
+    })();
+  }, []);
+
+  const uploadImg = async (img) => {
+    try {
+      const response = await fetch(img);
+      const file = await response.blob();
+      await uploadBytes(ref(storage, `photos/${file._data.blobId}`), file);
+      const photoUrl = await getDownloadURL(
+        ref(storage, `photos/${file._data.blobId}`)
+      );
+      await setPhoto(photoUrl);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePhoto = async () => {
+    if (cameraRef) {
+      const { uri } = await cameraRef.takePictureAsync();
+      await uploadImg(uri);
+    }
+  };
+
+  const handleForm = async () => {
+    await dispatch(
+      createpost({
+        name,
+        location,
+        photo,
+        locationName,
+        likes: 0,
+        comments: [],
+        owner: uid,
+      })
+    )
+      .then(() => {
+        setName("");
+        setLocation(null);
+        setPhoto("");
+        setLocationName("");
+        navigation.navigate("Posts");
+      })
+
+      .then(() => dispatch(getposts()));
+  };
+  const resetForm = () => {
+    setName("");
+    setLocation(null);
+    setLocationName("");
+    setPhoto("");
+  };
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -136,7 +164,9 @@ export default function CreatePostScreen() {
               </TouchableOpacity>
             </Camera>
           </View>
-          <Text style={styles.textPhoto}>Завантажте фото</Text>
+          <Text style={styles.textPhoto}>
+            {photo ? "Фото додано" : "Завантажте фото"}
+          </Text>
         </View>
         <View style={styles.inputBlock}>
           <TextInput
@@ -165,7 +195,7 @@ export default function CreatePostScreen() {
         <TouchableOpacity style={styles.button} onPress={handleForm}>
           <Text style={styles.buttonText}>Опубліковати</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.delWraper}>
+        <TouchableOpacity style={styles.delWraper} onPress={resetForm}>
           <SvgTresh />
         </TouchableOpacity>
       </View>

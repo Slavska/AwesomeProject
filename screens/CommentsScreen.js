@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,71 +8,106 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Image,
+  FlatList,
 } from "react-native";
 import SvgArrowFocused from "../components/SvgArrowFocused";
+import { useDispatch, useSelector } from "react-redux";
+import { addcomment, getposts } from "../redux/operations";
+import { useRoute } from "@react-navigation/native";
+import { getDownloadURL, ref, storage } from "firebase/storage";
 
 export default function Comment() {
-  const timestamp = Date.now();
-  const date = new Date(timestamp);
   const [input3Focused, setInput3Focused] = useState(false);
-  const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState([]);
+  const [text, setText] = useState("");
+  const dispatcher = useDispatch();
+  const photoAvatar = useSelector((state) => state.main?.user?.photoURL);
 
-  const handleAddComment = () => {
-    if (commentText.trim() !== "") {
-      const newComment = {
-        text: commentText,
-        date: date.toLocaleString(),
-      };
-      setComments([...comments, newComment]);
-      setCommentText("");
+  const {
+    params: { data },
+  } = useRoute();
+
+  const allPosts = useSelector((state) => state.main.posts);
+  const currentPost = allPosts.find((post) => post.id === data?.item?.id);
+
+  const handleForm = async () => {
+    const timestamp = Date.now();
+    const date = new Date(timestamp);
+    const formattedDate = date.toLocaleString();
+    const seconds = date.getSeconds();
+    const formattedDateWithSeconds = `${formattedDate}, ${seconds} seconds`;
+
+    const newComment = { message: text, date: formattedDateWithSeconds };
+
+    try {
+      await dispatcher(
+        addcomment({
+          comment: [...data.item.data.comments, newComment],
+          docId: data.item.id,
+        })
+      );
+      await dispatcher(getposts());
+      setText("");
+    } catch (error) {
+      console.log("Ошибка при добавлении комментария:", error);
     }
   };
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.container}>
-        <View style={styles.postThumb}></View>
+        <Image
+          style={styles.postThumb}
+          source={{ uri: currentPost.data.photo }}
+          resizeMode="cover"
+        />
         <TextInput
           onFocus={() => setInput3Focused(true)}
           onBlur={() => setInput3Focused(false)}
           style={[styles.input, input3Focused && styles.inputFocused]}
           placeholder="Коментувати..."
           placeholderTextColor={"#BDBDBD"}
-          value={commentText}
-          onChangeText={(text) => setCommentText(text)}
+          value={text}
+          onChangeText={(text) => setText(text)}
         />
-        <TouchableOpacity
-          style={styles.svgArrowCircle}
-          onPress={handleAddComment}
-        >
+        <TouchableOpacity style={styles.svgArrowCircle} onPress={handleForm}>
           <SvgArrowFocused style={styles.svgArrow} />
         </TouchableOpacity>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          {comments.map((comment, index) => (
-            <View
-              style={[
-                styles.textWrapper,
-                index % 2 === 0 ? styles.commentEven : styles.commentOdd,
-              ]}
-            >
-              <View
-                key={index}
-                style={[
-                  styles.containerComments,
-                  index % 2 === 0 ? styles.commentEven : styles.commentOdd,
-                ]}
-              >
-                <Text style={styles.textComment}>{comment.text}</Text>
-                <Text style={styles.textData}>{comment.date}</Text>
-              </View>
-              <View style={styles.photoThumb}></View>
-            </View>
-          ))}
-        </ScrollView>
+        {currentPost && currentPost.data.comments && (
+          <View style={styles.commentsList}>
+            <FlatList
+              data={currentPost.data.comments}
+              renderItem={({ item, index }) => (
+                <View
+                  style={[
+                    styles.textWrapper,
+                    index % 2 === 0 ? styles.commentEven : styles.commentOdd,
+                  ]}
+                  key={index}
+                >
+                  <View style={styles.photoThumb}>
+                    <Image
+                      source={{ uri: photoAvatar }}
+                      style={styles.photoThumb}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View
+                    style={[
+                      styles.containerComments,
+                      index % 2 === 0 ? styles.commentEven : styles.commentOdd,
+                    ]}
+                  >
+                    <Text style={styles.textComment}>{item.message}</Text>
+                    <Text style={styles.textData}>{item.date}</Text>
+                  </View>
+                </View>
+              )}
+            />
+          </View>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -101,9 +136,6 @@ const styles = StyleSheet.create({
   },
   postThumb: {
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-    backgroundColor: "rgba(232, 232, 232, 1)",
     width: 343,
     height: 240,
     alignItems: "center",

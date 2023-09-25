@@ -16,23 +16,42 @@ import SvgGrid from "../components/SvgGrid";
 import SvgLogout from "../components/SvgLogout";
 import { SvgPlus } from "../components/SvgPlus";
 import * as ImagePicker from "expo-image-picker";
+import { useDispatch, useSelector } from "react-redux";
+import { getposts, signout, updateuser } from "../redux/operations";
 
 export default function () {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { loginUser, photoUri } = route.params;
-  const [login, setLogin] = useState("");
+  const data = useSelector((state) => state.main);
   const [photo, setPhoto] = useState("");
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+  const uid = useSelector((state) => state.main?.user?.uid);
+
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const filterPostsByOwner = (posts, owner) => {
+    return posts.filter((post) => post.data.owner === owner);
+  };
+  useEffect(() => {
+    dispatch(getposts());
+  }, [uid]);
 
   useEffect(() => {
-    if (loginUser) {
-      setLogin(loginUser);
-      setPhoto(photoUri);
+    if (data.posts) {
+      const filtered = filterPostsByOwner(data.posts, uid);
+      setFilteredPosts(filtered);
     }
-  }, [loginUser, photoUri]);
+  }, [data.posts, uid]);
+
+  useEffect(() => {
+    setPhoto(data?.user?.photoURL);
+  }, [data?.user?.photoURL]);
+
+  const handleLogout = () => {
+    dispatch(signout()).then(() => navigation.navigate("Login"));
+  };
 
   const deleteAvatar = () => {
     setPhoto("");
+    dispatch(updateuser({ login: data?.user?.displayName, photoUri: "" }));
   };
 
   const handlePickImage = async () => {
@@ -56,6 +75,9 @@ export default function () {
         console.log("Выбор изображения был отменен");
       } else if (result.uri) {
         setPhoto(result.uri);
+        dispatch(
+          updateuser({ login: data.user.displayName, photoUri: result.uri })
+        );
       } else if (result.error) {
         console.error("Ошибка выбора изображения: ", result.error);
       }
@@ -105,16 +127,13 @@ export default function () {
               </View>
             )}
             <View style={styles.info}>
-              <Text style={styles.title}>{login}</Text>
-              <TouchableOpacity
-                style={styles.logout}
-                onPress={() => navigation.navigate("Registration")}
-              >
+              <Text style={styles.title}>{data?.user?.displayName}</Text>
+              <TouchableOpacity style={styles.logout} onPress={handleLogout}>
                 <SvgLogout />
               </TouchableOpacity>
             </View>
             <View style={styles.postList}>
-              <PostList />
+              {data?.posts?.length > 0 && <PostList data={filteredPosts} />}
             </View>
           </Animated.View>
         </ScrollView>
