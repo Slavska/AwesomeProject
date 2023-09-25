@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,6 @@ import SvgLike from "../components/SvgLike";
 
 export default function PostList({ data }) {
   const navigation = useNavigation();
-
   const [likes, setLikes] = useState({});
 
   useEffect(() => {
@@ -34,6 +33,7 @@ export default function PostList({ data }) {
           : prevLikes[postId] - 1,
     }));
   };
+
   return (
     <View>
       {data && data.length > 0 ? (

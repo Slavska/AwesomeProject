@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -14,12 +16,11 @@ import {
   Platform,
   Animated,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
-import { getposts, signin } from "../redux/operations";
+import { signin } from "../redux/operations";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [shift, setShift] = useState(false);
   const [position] = useState(new Animated.Value(0));
   const [input2Focused, setInput2Focused] = useState(false);
@@ -27,7 +28,6 @@ export default function LoginScreen() {
   const [hidePassword, setHidePassword] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
   const isLogined = useSelector((state) => state.main.user);
 
   const handleForm = () => {

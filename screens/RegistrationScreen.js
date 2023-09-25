@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -16,11 +18,11 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { SvgPlus } from "../components/SvgPlus";
-import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
-import { setUserProfile, signup, updateuser } from "../redux/operations";
+import { signup, updateuser } from "../redux/operations";
 
 export default function RegistrationScreen() {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [shift, setShift] = useState(false);
   const [position] = useState(new Animated.Value(0));
   const [hidePassword, setHidePassword] = useState(true);
@@ -31,8 +33,6 @@ export default function RegistrationScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [photoUri, setPhotoUri] = useState("");
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
 
   const handlePickImage = async () => {
     try {

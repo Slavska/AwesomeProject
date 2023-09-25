@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
+import { useDispatch } from "react-redux";
 import { Octicons } from "@expo/vector-icons";
 import SvgLogout from "./SvgLogout";
-import PostsScreen from "../screens/PostsScreen";
 import SvgArrow from "./SvgArrow";
+import PostsScreen from "../screens/PostsScreen";
 import CreatePostsScreen from "../screens/CreatePostsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import { useDispatch, useSelector } from "react-redux";
 import { signout } from "../redux/operations";
 
 const Tabs = createBottomTabNavigator();

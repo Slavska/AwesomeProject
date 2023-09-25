@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,27 +7,24 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   TextInput,
-  ScrollView,
   Image,
   FlatList,
 } from "react-native";
-import SvgArrowFocused from "../components/SvgArrowFocused";
+import { useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { addcomment, getposts } from "../redux/operations";
-import { useRoute } from "@react-navigation/native";
-import { getDownloadURL, ref, storage } from "firebase/storage";
+import SvgArrowFocused from "../components/SvgArrowFocused";
 
 export default function Comment() {
+  const dispatcher = useDispatch();
   const [input3Focused, setInput3Focused] = useState(false);
   const [text, setText] = useState("");
-  const dispatcher = useDispatch();
   const photoAvatar = useSelector((state) => state.main?.user?.photoURL);
-
+  const allPosts = useSelector((state) => state.main.posts);
   const {
     params: { data },
   } = useRoute();
 
-  const allPosts = useSelector((state) => state.main.posts);
   const currentPost = allPosts.find((post) => post.id === data?.item?.id);
 
   const handleForm = async () => {

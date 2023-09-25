@@ -9,27 +9,28 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import { useDispatch, useSelector } from "react-redux";
 import PostList from "../components/PostList";
 import SvgGrid from "../components/SvgGrid";
 import SvgLogout from "../components/SvgLogout";
 import { SvgPlus } from "../components/SvgPlus";
-import * as ImagePicker from "expo-image-picker";
-import { useDispatch, useSelector } from "react-redux";
 import { getposts, signout, updateuser } from "../redux/operations";
 
 export default function () {
-  const data = useSelector((state) => state.main);
-  const [photo, setPhoto] = useState("");
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const [photo, setPhoto] = useState("");
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const data = useSelector((state) => state.main);
   const uid = useSelector((state) => state.main?.user?.uid);
 
-  const [filteredPosts, setFilteredPosts] = useState([]);
   const filterPostsByOwner = (posts, owner) => {
     return posts.filter((post) => post.data.owner === owner);
   };
+
   useEffect(() => {
     dispatch(getposts());
   }, [uid]);

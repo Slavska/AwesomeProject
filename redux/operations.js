@@ -5,7 +5,6 @@ import {
   updateProfile,
   signOut,
 } from "firebase/auth";
-import { auth } from "../config";
 import {
   addDoc,
   collection,
@@ -13,7 +12,7 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import { db } from "../config";
+import { db, auth } from "../config";
 
 export const signin = createAsyncThunk(
   "signin",

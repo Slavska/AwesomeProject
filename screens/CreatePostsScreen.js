@@ -2,29 +2,28 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-  ImageBackground,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
+import { reverseGeocodeAsync } from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
+import { useDispatch, useSelector } from "react-redux";
 import SvgCamera from "../components/SvgCamera";
 import SvgLocation from "../components/SvgLocation";
 import SvgTresh from "../components/SvgTresh";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
 import { createpost, getposts } from "../redux/operations";
 import { storage } from "../config";
-import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
-import { reverseGeocodeAsync } from "expo-location";
 
 export default function CreatePostScreen() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [location, setLocation] = useState(null);
   const [photo, setPhoto] = useState("");
@@ -33,7 +32,6 @@ export default function CreatePostScreen() {
   const [cameraRef, setCameraRef] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const uid = useSelector((state) => state.main?.user?.uid);
-  const dispatch = useDispatch();
 
   const reverseGeocode = async (coords) => {
     try {
@@ -102,6 +100,13 @@ export default function CreatePostScreen() {
     }
   };
 
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
   const handleForm = async () => {
     await dispatch(
       createpost({
@@ -115,10 +120,7 @@ export default function CreatePostScreen() {
       })
     )
       .then(() => {
-        setName("");
-        setLocation(null);
-        setPhoto("");
-        setLocationName("");
+        resetForm();
         navigation.navigate("Posts");
       })
 
@@ -130,13 +132,6 @@ export default function CreatePostScreen() {
     setLocationName("");
     setPhoto("");
   };
-
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
 
   return (
     <KeyboardAvoidingView

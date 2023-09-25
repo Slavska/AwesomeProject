@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Dimensions, Image } from "react-native";
-import PostList from "../components/PostList";
 import { useDispatch, useSelector } from "react-redux";
+import PostList from "../components/PostList";
 import { getposts } from "../redux/operations";
 
 export default function PostsScreen() {
@@ -14,10 +14,12 @@ export default function PostsScreen() {
   const filterPostsByOwner = (posts, owner) => {
     return posts.filter((post) => post.data.owner === owner);
   };
+
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getposts());
   }, []);
+
   useEffect(() => {
     if (data.posts) {
       const filtered = filterPostsByOwner(data.posts, uid);
