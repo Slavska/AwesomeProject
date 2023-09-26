@@ -15,7 +15,8 @@ import SvgLike from "../components/SvgLike";
 export default function PostList({ data }) {
   const navigation = useNavigation();
   const [likes, setLikes] = useState({});
-
+  const default_image_url =
+    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
   useEffect(() => {
     const initialLikes = {};
     data.forEach((item) => {
@@ -33,17 +34,20 @@ export default function PostList({ data }) {
           : prevLikes[postId] - 1,
     }));
   };
-
+  const sortedData = data.slice().sort((a, b) => {
+    return b.data.date - a.data.date;
+  });
   return (
     <View>
-      {data && data.length > 0 ? (
+      {sortedData && sortedData.length > 0 ? (
         <FlatList
-          data={data}
+          flexGrow={1}
+          data={sortedData}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
               <Image
-                source={{ uri: item.data.photo }}
+                source={{ uri: item.data.photo || default_image_url }}
                 style={styles.postThumb}
                 resizeMode="cover"
               />

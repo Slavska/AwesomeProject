@@ -3,7 +3,6 @@ import {
   Text,
   View,
   Image,
-  ScrollView,
   Dimensions,
   Animated,
   KeyboardAvoidingView,
@@ -26,7 +25,6 @@ export default function () {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const data = useSelector((state) => state.main);
   const uid = useSelector((state) => state.main?.user?.uid);
-
   const filterPostsByOwner = (posts, owner) => {
     return posts.filter((post) => post.data.owner === owner);
   };
@@ -98,46 +96,41 @@ export default function () {
           style={styles.bg}
           resizeMode="cover"
         />
-        <ScrollView
-          contentContainerStyle={styles.scrollViewContainer}
-          bounces={false}
-        >
-          <Animated.View style={styles.formWrapper}>
-            {photo ? (
-              <View style={styles.avavtarThumb}>
-                <Image
-                  style={styles.postThumb}
-                  source={{ uri: photo }}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  onPress={() => deleteAvatar()}
-                  style={styles.plusSvg}
-                >
-                  <SvgGrid />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.avavtarThumb}>
-                <TouchableOpacity
-                  onPress={handlePickImage}
-                  style={styles.plusSvg}
-                >
-                  <SvgPlus />
-                </TouchableOpacity>
-              </View>
-            )}
-            <View style={styles.info}>
-              <Text style={styles.title}>{data?.user?.displayName}</Text>
-              <TouchableOpacity style={styles.logout} onPress={handleLogout}>
-                <SvgLogout />
+        <Animated.View style={styles.formWrapper}>
+          {photo ? (
+            <View style={styles.avavtarThumb}>
+              <Image
+                style={styles.postThumb}
+                source={{ uri: photo }}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                onPress={() => deleteAvatar()}
+                style={styles.plusSvg}
+              >
+                <SvgGrid />
               </TouchableOpacity>
             </View>
-            <View style={styles.postList}>
-              {data?.posts?.length > 0 && <PostList data={filteredPosts} />}
+          ) : (
+            <View style={styles.avavtarThumb}>
+              <TouchableOpacity
+                onPress={handlePickImage}
+                style={styles.plusSvg}
+              >
+                <SvgPlus />
+              </TouchableOpacity>
             </View>
-          </Animated.View>
-        </ScrollView>
+          )}
+          <View style={styles.info}>
+            <Text style={styles.title}>{data?.user?.displayName}</Text>
+            <TouchableOpacity style={styles.logout} onPress={handleLogout}>
+              <SvgLogout />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.postList}>
+            {data?.posts?.length > 0 && <PostList data={filteredPosts} />}
+          </View>
+        </Animated.View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -177,13 +170,9 @@ const styles = StyleSheet.create({
     top: 81,
     left: 107,
   },
-  scrollViewContainer: {
-    height: screenSize.height,
-    marginTop: 239,
-  },
   formWrapper: {
-    flex: 1,
-    minheight: screenSize.height,
+    marginTop: 239,
+    height: screenSize.height,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     borderTopLeftRadius: 30,

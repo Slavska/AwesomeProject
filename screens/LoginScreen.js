@@ -31,6 +31,10 @@ export default function LoginScreen() {
   const isLogined = useSelector((state) => state.main.user);
 
   const handleForm = () => {
+    if (!email || !password) {
+      alert("Заповніть обов'язкове поле");
+      return;
+    }
     dispatch(signin({ email, password })).then(() => {
       navigation.navigate("Home");
     });
@@ -95,6 +99,7 @@ export default function LoginScreen() {
                 placeholderTextColor={"#BDBDBD"}
                 value={email}
                 onChangeText={setEmail}
+                required={true}
               />
               <TextInput
                 onFocus={() => setInput3Focused(true)}
@@ -105,6 +110,7 @@ export default function LoginScreen() {
                 secureTextEntry={hidePassword}
                 value={password}
                 onChangeText={setPassword}
+                required={true}
               />
               <TouchableOpacity onPress={togglePasswordVisibility}>
                 <Text style={styles.inputPassword}>

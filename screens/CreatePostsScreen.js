@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -26,7 +27,7 @@ export default function CreatePostScreen() {
   const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [location, setLocation] = useState(null);
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
@@ -68,7 +69,7 @@ export default function CreatePostScreen() {
         console.error("Ошибка получения местоположения:", error);
       }
     })();
-  }, []);
+  }, [locationName]);
 
   useEffect(() => {
     (async () => {
@@ -108,6 +109,10 @@ export default function CreatePostScreen() {
   }
 
   const handleForm = async () => {
+    if (!name || !location || !photo) {
+      alert("Заповніть обов'язкове поле");
+      return;
+    }
     await dispatch(
       createpost({
         name,
@@ -117,6 +122,7 @@ export default function CreatePostScreen() {
         likes: 0,
         comments: [],
         owner: uid,
+        date: new Date(),
       })
     )
       .then(() => {
@@ -130,7 +136,7 @@ export default function CreatePostScreen() {
     setName("");
     setLocation(null);
     setLocationName("");
-    setPhoto("");
+    setPhoto(null);
   };
 
   return (
@@ -138,62 +144,72 @@ export default function CreatePostScreen() {
       style={styles.containerTop}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.container}>
-        <View style={styles.photoBlock}>
-          <View style={styles.photoThumb}>
-            <Camera style={styles.camera} type={cameraType} ref={setCameraRef}>
-              <TouchableOpacity
-                style={styles.flipContainer}
-                onPress={() => {
-                  setCameraType(
-                    cameraType === Camera.Constants.Type.back
-                      ? Camera.Constants.Type.front
-                      : Camera.Constants.Type.back
-                  );
-                }}
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContainer}
+        bounces={false}
+      >
+        <View style={styles.container}>
+          <View style={styles.photoBlock}>
+            <View style={styles.photoThumb}>
+              <Camera
+                style={styles.camera}
+                type={cameraType}
+                ref={setCameraRef}
               >
-                <Ionicons name="camera-reverse" size={32} color="#F6F6F6" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.svgThumb} onPress={handlePhoto}>
-                <SvgCamera />
-              </TouchableOpacity>
-            </Camera>
+                <TouchableOpacity
+                  style={styles.flipContainer}
+                  onPress={() => {
+                    setCameraType(
+                      cameraType === Camera.Constants.Type.back
+                        ? Camera.Constants.Type.front
+                        : Camera.Constants.Type.back
+                    );
+                  }}
+                >
+                  <Ionicons name="camera-reverse" size={32} color="#F6F6F6" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.svgThumb} onPress={handlePhoto}>
+                  <SvgCamera />
+                </TouchableOpacity>
+              </Camera>
+            </View>
+            <View style={styles.textPhoto}>
+              {photo ? <Text>Фото додано</Text> : <Text>Завантажте фото</Text>}
+            </View>
           </View>
-          <Text style={styles.textPhoto}>
-            {photo ? "Фото додано" : "Завантажте фото"}
-          </Text>
-        </View>
-        <View style={styles.inputBlock}>
-          <TextInput
-            style={styles.input}
-            placeholder="Назва..."
-            placeholderTextColor={"#BDBDBD"}
-            value={name}
-            onChangeText={setName}
-          />
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => navigation.navigate("Map")}
-          >
-            <Text
-              style={[styles.inputText, { paddingLeft: 25 }]}
-              placeholder="Місцевість..."
-              placeholderTextColor="#BDBDBD"
-              value={locationName}
-              onChangeText={setLocationName}
+          <View style={styles.inputBlock}>
+            <TextInput
+              style={styles.input}
+              placeholder="Назва..."
+              placeholderTextColor={"#BDBDBD"}
+              value={name}
+              onChangeText={setName}
+              required={true}
+            />
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => navigation.navigate("Map")}
             >
-              {locationName}
-            </Text>
+              <Text
+                style={[styles.inputText, { paddingLeft: 25 }]}
+                placeholder="Місцевість..."
+                placeholderTextColor="#BDBDBD"
+                value={locationName}
+                onChangeText={setLocationName}
+              >
+                {locationName}
+              </Text>
+            </TouchableOpacity>
+            <SvgLocation style={styles.svgLocation} />
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleForm}>
+            <Text style={styles.buttonText}>Опубліковати</Text>
           </TouchableOpacity>
-          <SvgLocation style={styles.svgLocation} />
+          <TouchableOpacity style={styles.delWraper} onPress={resetForm}>
+            <SvgTresh />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.button} onPress={handleForm}>
-          <Text style={styles.buttonText}>Опубліковати</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.delWraper} onPress={resetForm}>
-          <SvgTresh />
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

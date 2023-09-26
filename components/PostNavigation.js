@@ -76,7 +76,7 @@ export default function PostNavigation() {
         component={CreatePostsScreen}
         options={{
           headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.navigate("Posts")}>
               <SvgArrow style={{ marginLeft: 16 }} />
             </TouchableOpacity>
           ),

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,41 +14,46 @@ import { useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { addcomment, getposts } from "../redux/operations";
 import SvgArrowFocused from "../components/SvgArrowFocused";
+import Comment from "../components/Comments";
 
-export default function Comment() {
+export default function CommentsScreen() {
   const dispatcher = useDispatch();
   const [input3Focused, setInput3Focused] = useState(false);
   const [text, setText] = useState("");
-  const photoAvatar = useSelector((state) => state.main?.user?.photoURL);
   const allPosts = useSelector((state) => state.main.posts);
   const {
     params: { data },
   } = useRoute();
 
   const currentPost = allPosts.find((post) => post.id === data?.item?.id);
+  const default_image_url =
+    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
 
   const handleForm = async () => {
     const timestamp = Date.now();
     const date = new Date(timestamp);
     const formattedDate = date.toLocaleString();
     const seconds = date.getSeconds();
+    if (!text) {
+      alert("Заповніть обов'язкове поле");
+      return;
+    }
     const formattedDateWithSeconds = `${formattedDate}, ${seconds} seconds`;
 
     const newComment = { message: text, date: formattedDateWithSeconds };
-
-    try {
-      await dispatcher(
-        addcomment({
-          comment: [...data.item.data.comments, newComment],
-          docId: data.item.id,
-        })
-      );
-      await dispatcher(getposts());
-      setText("");
-    } catch (error) {
-      console.log("Ошибка при добавлении комментария:", error);
-    }
+    dispatcher(
+      addcomment({
+        comment: [...currentPost.data.comments, newComment],
+        docId: data.item.id,
+      })
+    )
+      .then(() => dispatcher(getposts()))
+      .then(() => setText(""));
   };
+  useEffect(() => {
+    return () => {};
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -57,7 +62,7 @@ export default function Comment() {
       <View style={styles.container}>
         <Image
           style={styles.postThumb}
-          source={{ uri: currentPost.data.photo }}
+          source={{ uri: currentPost.data.photo || default_image_url }}
           resizeMode="cover"
         />
         <TextInput
@@ -68,40 +73,19 @@ export default function Comment() {
           placeholderTextColor={"#BDBDBD"}
           value={text}
           onChangeText={(text) => setText(text)}
+          required={true}
         />
         <TouchableOpacity style={styles.svgArrowCircle} onPress={handleForm}>
           <SvgArrowFocused style={styles.svgArrow} />
         </TouchableOpacity>
-        {currentPost && currentPost.data.comments && (
+        {currentPost && (
           <View style={styles.commentsList}>
             <FlatList
               data={currentPost.data.comments}
               renderItem={({ item, index }) => (
-                <View
-                  style={[
-                    styles.textWrapper,
-                    index % 2 === 0 ? styles.commentEven : styles.commentOdd,
-                  ]}
-                  key={index}
-                >
-                  <View style={styles.photoThumb}>
-                    <Image
-                      source={{ uri: photoAvatar }}
-                      style={styles.photoThumb}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View
-                    style={[
-                      styles.containerComments,
-                      index % 2 === 0 ? styles.commentEven : styles.commentOdd,
-                    ]}
-                  >
-                    <Text style={styles.textComment}>{item.message}</Text>
-                    <Text style={styles.textData}>{item.date}</Text>
-                  </View>
-                </View>
+                <Comment odd={index % 2 === 0} item={item} />
               )}
+              keyExtractor={(item, index) => item.date.toString()}
             />
           </View>
         )}

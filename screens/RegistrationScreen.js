@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -33,6 +33,12 @@ export default function RegistrationScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [photoUri, setPhotoUri] = useState("");
+  const default_image_url =
+    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
+  const uid = useSelector((state) => state.main?.user?.uid);
+  if (uid) {
+    navigation.navigate("Home");
+  }
 
   const handlePickImage = async () => {
     try {
@@ -63,6 +69,11 @@ export default function RegistrationScreen() {
     }
   };
   const handleForm = () => {
+    if (!login || !email || !password || !photoUri) {
+      alert("Заповніть обов'язкове поле");
+      return;
+    }
+
     dispatch(signup({ email, password, photoUri }))
       .then(() => {
         dispatch(updateuser({ login, photoUri }));
@@ -117,7 +128,7 @@ export default function RegistrationScreen() {
             <View style={styles.avavtarThumb}>
               {photoUri ? (
                 <Image
-                  source={{ uri: photoUri }}
+                  source={{ uri: photoUri || default_image_url }}
                   style={styles.avatarImage}
                   resizeMode="cover"
                 />
@@ -135,6 +146,7 @@ export default function RegistrationScreen() {
                 placeholderTextColor={"#BDBDBD"}
                 value={login}
                 onChangeText={setLogin}
+                required={true}
               />
               <TextInput
                 onFocus={() => setInput2Focused(true)}
@@ -144,6 +156,7 @@ export default function RegistrationScreen() {
                 placeholderTextColor={"#BDBDBD"}
                 value={email}
                 onChangeText={setEmail}
+                required={true}
               />
               <TextInput
                 onFocus={() => setInput3Focused(true)}
@@ -154,6 +167,7 @@ export default function RegistrationScreen() {
                 secureTextEntry={hidePassword}
                 value={password}
                 onChangeText={setPassword}
+                required={true}
               />
               <TouchableOpacity onPress={togglePasswordVisibility}>
                 <Text style={styles.inputPassword}>
@@ -200,7 +214,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: "#212121",
     marginBottom: 33,
-    fontWeight: 500,
   },
   inputContainer: {
     gap: 16,

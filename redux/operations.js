@@ -80,7 +80,7 @@ export const updateuser = createAsyncThunk(
 export const createpost = createAsyncThunk(
   "createpost",
   async (
-    { name, location, photo, locationName, likes, comments, owner },
+    { name, location, photo, locationName, likes, comments, owner, date },
     thunkAPI
   ) => {
     try {
@@ -92,6 +92,7 @@ export const createpost = createAsyncThunk(
         likes,
         comments,
         owner,
+        date,
       });
     } catch (e) {
       return thunkAPI.rejectWithValue(e.message);

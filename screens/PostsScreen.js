@@ -8,6 +8,8 @@ export default function PostsScreen() {
   const data = useSelector((state) => state.main);
   const photo = data?.user?.photoURL;
   const uid = useSelector((state) => state.main?.user?.uid);
+  const default_image_url =
+    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
 
   const [filteredPosts, setFilteredPosts] = useState([]);
 
@@ -33,7 +35,7 @@ export default function PostsScreen() {
         {photo ? (
           <View>
             <Image
-              source={{ uri: photo }}
+              source={{ uri: photo || default_image_url }}
               style={styles.avavtarThumb}
               resizeMode="cover"
             />
