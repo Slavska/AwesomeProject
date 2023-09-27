@@ -16,7 +16,7 @@ export default function PostList({ data }) {
   const navigation = useNavigation();
   const [likes, setLikes] = useState({});
   const default_image_url =
-    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
+    "gs://awesomeproject-9d076.appspot.com/photos/default_image_post.jpg";
   useEffect(() => {
     const initialLikes = {};
     data.forEach((item) => {

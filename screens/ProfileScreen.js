@@ -17,6 +17,8 @@ import SvgGrid from "../components/SvgGrid";
 import SvgLogout from "../components/SvgLogout";
 import { SvgPlus } from "../components/SvgPlus";
 import { getposts, signout, updateuser } from "../redux/operations";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
+import { storage } from "../config";
 
 export default function () {
   const dispatch = useDispatch();
@@ -73,10 +75,17 @@ export default function () {
       if (result.canceled) {
         console.log("Выбор изображения был отменен");
       } else if (result.uri) {
-        setPhoto(result.uri);
-        dispatch(
-          updateuser({ login: data.user.displayName, photoUri: result.uri })
-        );
+        try {
+          const response = await fetch(result.uri);
+          const file = await response.blob();
+          await uploadBytes(ref(storage, `avatars/${file._data.blobId}`), file);
+          const photoUrl = await getDownloadURL(
+            ref(storage, `avatars/${file._data.blobId}`)
+          );
+          await setPhoto(photoUrl);
+        } catch (error) {
+          console.log(error);
+        }
       } else if (result.error) {
         console.error("Ошибка выбора изображения: ", result.error);
       }

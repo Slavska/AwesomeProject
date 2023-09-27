@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, Image } from "react-native";
 import { useSelector } from "react-redux";
 
 export default function Comment({ odd, item }) {
+  const default_image_url =
+    "gs://awesomeproject-9d076.appspot.com/photos/default_image_post.jpg";
   const photoAvatar = useSelector((state) => state.main?.user?.photoURL);
   return (
     <View

@@ -9,7 +9,7 @@ export default function PostsScreen() {
   const photo = data?.user?.photoURL;
   const uid = useSelector((state) => state.main?.user?.uid);
   const default_image_url =
-    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
+    "gs://awesomeproject-9d076.appspot.com/photos/default_image_post.jpg";
 
   const [filteredPosts, setFilteredPosts] = useState([]);
 

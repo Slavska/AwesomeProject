@@ -62,9 +62,9 @@ export const updateuser = createAsyncThunk(
   "updateuser",
   async ({ login, photoUri }, thunkAPI) => {
     const user = auth.currentUser;
-    if (auth.currentUser) {
+    if (user) {
       try {
-        const data = await updateProfile(auth.currentUser, {
+        const data = await updateProfile(user, {
           displayName: login,
           photoURL: photoUri,
         });

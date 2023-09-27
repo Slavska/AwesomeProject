@@ -27,7 +27,7 @@ export default function CommentsScreen() {
 
   const currentPost = allPosts.find((post) => post.id === data?.item?.id);
   const default_image_url =
-    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
+    "gs://awesomeproject-9d076.appspot.com/photos/default_image_post.jpg";
 
   const handleForm = async () => {
     const timestamp = Date.now();

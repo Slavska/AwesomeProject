@@ -35,8 +35,14 @@ export default function LoginScreen() {
       alert("Заповніть обов'язкове поле");
       return;
     }
-    dispatch(signin({ email, password })).then(() => {
-      navigation.navigate("Home");
+    dispatch(signin({ email, password })).then((r) => {
+      if (r.payload) {
+        navigation.navigate("Home");
+        setEmail("");
+        setPassword("");
+      } else {
+        alert("Перевірте логін або пароль");
+      }
     });
   };
 
@@ -72,7 +78,6 @@ export default function LoginScreen() {
       useNativeDriver: false,
     }).start();
   }, [shift]);
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}

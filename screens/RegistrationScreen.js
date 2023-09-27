@@ -4,6 +4,8 @@ import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
+import { storage } from "../config";
 import {
   StyleSheet,
   Text,
@@ -34,7 +36,7 @@ export default function RegistrationScreen() {
   const [password, setPassword] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const default_image_url =
-    "gs://awesomeprojectc.appspot.com/photos/default_image.jpghttps://example.com/default_image.jpg";
+    "gs://awesomeproject-9d076.appspot.com/photos/default_image_post.jpg";
   const uid = useSelector((state) => state.main?.user?.uid);
   if (uid) {
     navigation.navigate("Home");
@@ -64,22 +66,41 @@ export default function RegistrationScreen() {
       } else if (result.error) {
         console.error("Ошибка выбора изображения: ", result.error);
       }
+
+      try {
+        const response = await fetch(result.uri);
+        const file = await response.blob();
+        await uploadBytes(ref(storage, `avatars/${file._data.blobId}`), file);
+        const photoUrl = await getDownloadURL(
+          ref(storage, `avatars/${file._data.blobId}`)
+        );
+        await setPhotoUri(photoUrl);
+      } catch (error) {
+        console.log(error);
+      }
     } catch (error) {
       console.error("Произошла ошибка: ", error);
     }
   };
+
   const handleForm = () => {
     if (!login || !email || !password || !photoUri) {
       alert("Заповніть обов'язкове поле");
       return;
     }
-
-    dispatch(signup({ email, password, photoUri }))
-      .then(() => {
+    dispatch(signup({ email, password, photoUri })).then((r) => {
+      if (r.error) {
+        navigation.navigate("Login");
+        alert("Ваш e-mail використовується");
+      } else {
+        navigation.navigate("Home");
         dispatch(updateuser({ login, photoUri }));
-      })
-
-      .finally(() => navigation.navigate("Home"));
+        setPhotoUri("");
+        setLogin("");
+        setEmail("");
+        setPassword("");
+      }
+    });
   };
 
   const togglePasswordVisibility = (event) => {
